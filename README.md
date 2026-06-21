@@ -1,0 +1,1 @@
+# lingoi-magic-egg-assets
