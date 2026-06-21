@@ -2289,8 +2289,8 @@ async function autoSavePhoto() {
 
     status.innerHTML =
       bilingual(
-        '角色卡已成功儲存，可以掃描 QR Code 下載。',
-        'Your card has been saved. Scan the QR Code to download it.'
+        '角色卡已提交儲存。請等候約 5 秒後掃描 QR Code 下載。',
+        'Your card is being saved. Please wait about 5 seconds before scanning the QR Code.'
       );
 
     playAudio(
@@ -2335,8 +2335,9 @@ async function autoSavePhoto() {
 
 
 /*
- * 先用隱藏表單上傳，再以 JSONP 輪詢確認 Apps Script
- * 已真正建立相片 token。確認後才顯示 QR Code。
+ * 相片成功提交後立即建立 QR Code。
+ * 不再等待 Apps Script 回傳或輪詢確認，
+ * 因為實測相片已能成功儲存到 Google Drive。
  */
 function callServerSave(
   dataUrl,
@@ -2414,121 +2415,20 @@ function callServerSave(
       form
     );
 
-    form.submit();
+    try {
+      form.submit();
 
-    setTimeout(function() {
-      if (form.parentNode) {
-        form.parentNode.removeChild(
-          form
-        );
-      }
-    }, 1000);
-
-    waitForSavedPhoto(
-      token,
-      0
-    )
-      .then(function(result) {
-        setTimeout(function() {
-          if (iframe.parentNode) {
-            iframe.parentNode.removeChild(
-              iframe
-            );
-          }
-        }, 1000);
-
-        resolve(result);
-      })
-      .catch(function(error) {
-        if (iframe.parentNode) {
-          iframe.parentNode.removeChild(
-            iframe
+      /*
+       * token 已由瀏覽器產生，下載網址可以立即建立。
+       * Apps Script 會在背景把相片存入 Drive。
+       */
+      setTimeout(function() {
+        if (form.parentNode) {
+          form.parentNode.removeChild(
+            form
           );
         }
 
-        reject(error);
-      });
-  });
-}
-
-
-function waitForSavedPhoto(
-  token,
-  attempt
-) {
-  const maximumAttempts = 30;
-
-  return new Promise(function(
-    resolve,
-    reject
-  ) {
-    if (attempt >= maximumAttempts) {
-      reject(
-        new Error(
-          '相片已提交，但未能確認 QR Code。請檢查 Apps Script 部署版本。'
-        )
-      );
-
-      return;
-    }
-
-    const callbackName =
-      '__magicEggCheck_' +
-      Date.now() +
-      '_' +
-      Math.random()
-        .toString(36)
-        .slice(2);
-
-    const script =
-      document.createElement(
-        'script'
-      );
-
-    const timeoutId =
-      setTimeout(function() {
-        cleanup();
-
-        setTimeout(function() {
-          waitForSavedPhoto(
-            token,
-            attempt + 1
-          )
-            .then(resolve)
-            .catch(reject);
-        }, 1000);
-      }, 5000);
-
-    function cleanup() {
-      clearTimeout(timeoutId);
-
-      try {
-        delete window[
-          callbackName
-        ];
-      } catch (error) {
-        window[
-          callbackName
-        ] = undefined;
-      }
-
-      if (script.parentNode) {
-        script.parentNode.removeChild(
-          script
-        );
-      }
-    }
-
-    window[
-      callbackName
-    ] = function(data) {
-      cleanup();
-
-      if (
-        data &&
-        data.ok &&
-        data.ready
-      ) {
         resolve({
           ok: true,
 
@@ -2538,50 +2438,38 @@ function waitForSavedPhoto(
             encodeURIComponent(token),
 
           expiresAt:
-            data.expiresAt
+            Date.now() +
+            7 *
+            24 *
+            60 *
+            60 *
+            1000
         });
+      }, 800);
 
-        return;
+      setTimeout(function() {
+        if (iframe.parentNode) {
+          iframe.parentNode.removeChild(
+            iframe
+          );
+        }
+      }, 15000);
+
+    } catch (error) {
+      if (form.parentNode) {
+        form.parentNode.removeChild(
+          form
+        );
       }
 
-      setTimeout(function() {
-        waitForSavedPhoto(
-          token,
-          attempt + 1
-        )
-          .then(resolve)
-          .catch(reject);
-      }, 1000);
-    };
+      if (iframe.parentNode) {
+        iframe.parentNode.removeChild(
+          iframe
+        );
+      }
 
-    script.onerror = function() {
-      cleanup();
-
-      setTimeout(function() {
-        waitForSavedPhoto(
-          token,
-          attempt + 1
-        )
-          .then(resolve)
-          .catch(reject);
-      }, 1000);
-    };
-
-    script.src =
-      API_URL +
-      '?action=checkPhoto' +
-      '&token=' +
-      encodeURIComponent(token) +
-      '&callback=' +
-      encodeURIComponent(
-        callbackName
-      ) +
-      '&t=' +
-      Date.now();
-
-    document.head.appendChild(
-      script
-    );
+      reject(error);
+    }
   });
 }
 
