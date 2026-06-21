@@ -2,8 +2,6 @@
 <html lang="zh-Hant">
 
 <head>
-  <base target="_top">
-
   <meta charset="UTF-8">
 
   <meta
@@ -65,6 +63,10 @@
       font-size: clamp(30px, 5vw, 52px);
     }
 
+    .topbar small {
+      font-size: 0.52em;
+    }
+
     .school {
       padding: 10px 16px;
       font-weight: 800;
@@ -79,8 +81,7 @@
       display: grid;
       place-items: center;
       overflow: hidden;
-      background:
-        rgba(255, 255, 255, 0.94);
+      background: rgba(255, 255, 255, 0.94);
       border-radius: 30px;
       box-shadow:
         0 18px 50px
@@ -117,8 +118,7 @@
       max-width: 760px;
       margin: 0 auto 20px;
       padding: 18px 22px;
-      font-size:
-        clamp(20px, 2.7vw, 30px);
+      font-size: clamp(20px, 2.7vw, 30px);
       background: white;
       border: 3px solid #d9ecff;
       border-radius: 24px;
@@ -154,18 +154,13 @@
           #e9ad38 100%
         );
       box-shadow:
-        inset -18px -22px 30px
-        rgba(167, 105, 38, 0.2),
-        0 20px 36px
-        rgba(92, 65, 22, 0.2);
-      animation:
-        floating 2.4s
-        ease-in-out infinite;
+        inset -18px -22px 30px rgba(167, 105, 38, 0.2),
+        0 20px 36px rgba(92, 65, 22, 0.2);
+      animation: floating 2.4s ease-in-out infinite;
     }
 
     .egg.shake {
-      animation:
-        shaking 0.4s linear 3;
+      animation: shaking 0.4s linear 3;
     }
 
     .egg.cracked {
@@ -212,18 +207,22 @@
           #ffd468,
           #ff9f43
         );
-      box-shadow:
-        0 7px 0 #d77d20;
+      box-shadow: 0 7px 0 #d77d20;
     }
 
-    .secondary {
-      color: #234d72;
-      background: #e8f3ff;
+    .primary:active {
+      transform: translateY(4px);
+      box-shadow: 0 3px 0 #d77d20;
     }
 
     .primary:disabled {
       cursor: not-allowed;
       opacity: 0.5;
+    }
+
+    .secondary {
+      color: #234d72;
+      background: #e8f3ff;
     }
 
     .actions {
@@ -254,8 +253,7 @@
     .question {
       margin: 0 0 28px;
       text-align: center;
-      font-size:
-        clamp(24px, 4vw, 38px);
+      font-size: clamp(24px, 4vw, 38px);
     }
 
     .choices {
@@ -297,8 +295,7 @@
 
     .result-grid {
       display: grid;
-      grid-template-columns:
-        0.9fr 1.1fr;
+      grid-template-columns: 0.9fr 1.1fr;
       gap: 28px;
       align-items: center;
     }
@@ -333,8 +330,7 @@
 
     .result-copy h2 {
       margin: 0 0 12px;
-      font-size:
-        clamp(34px, 5vw, 50px);
+      font-size: clamp(34px, 5vw, 50px);
     }
 
     .result-copy p {
@@ -344,8 +340,7 @@
 
     .camera-grid {
       display: grid;
-      grid-template-columns:
-        1.25fr 0.75fr;
+      grid-template-columns: 1.25fr 0.75fr;
       gap: 22px;
     }
 
@@ -364,6 +359,7 @@
       height: 100%;
       object-fit: cover;
       opacity: 0.3;
+      z-index: 1;
     }
 
     .camera-box video {
@@ -373,6 +369,7 @@
       height: 100%;
       object-fit: cover;
       transform: scaleX(-1);
+      z-index: 2;
     }
 
     .camera-character {
@@ -384,9 +381,9 @@
       object-fit: contain;
       filter:
         drop-shadow(
-          0 8px 8px
-          rgba(0, 0, 0, 0.4)
+          0 8px 8px rgba(0, 0, 0, 0.4)
         );
+      z-index: 3;
     }
 
     .countdown {
@@ -397,8 +394,8 @@
       color: white;
       font-size: 120px;
       font-weight: 900;
-      text-shadow:
-        0 5px 16px black;
+      text-shadow: 0 5px 16px black;
+      z-index: 4;
     }
 
     .side-card {
@@ -422,8 +419,7 @@
 
     .preview-grid {
       display: grid;
-      grid-template-columns:
-        1fr 0.65fr;
+      grid-template-columns: 1fr 0.65fr;
       gap: 24px;
       align-items: start;
     }
@@ -448,20 +444,27 @@
       width: 100%;
       border-radius: 18px;
       box-shadow:
-        0 12px 30px
-        rgba(33, 57, 80, 0.18);
+        0 12px 30px rgba(33, 57, 80, 0.18);
     }
 
     @media (max-width: 860px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
       .choices {
-        grid-template-columns:
-          1fr 1fr;
+        grid-template-columns: 1fr 1fr;
       }
 
       .result-grid,
       .camera-grid,
       .preview-grid {
         grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 16px;
       }
     }
 
@@ -481,6 +484,10 @@
         left: 0;
         width: 100%;
       }
+
+      #finalCanvas {
+        box-shadow: none;
+      }
     }
   </style>
 </head>
@@ -491,7 +498,7 @@
 
   <div class="topbar">
     <h1>
-      🥚 靈愛奇蛋
+      ✨🥚 靈愛奇蛋
       <small>Magic Egg</small>
     </h1>
 
@@ -516,7 +523,7 @@
         </span>
 
         <span class="en">
-          Hello! I’m waiting for a new friend. Tap me and say hello!
+          Hello! I'm waiting for a new friend. Tap me and say hello!
         </span>
       </div>
 
@@ -571,16 +578,12 @@
       class="screen center"
     >
       <div class="hatch">
-
         <div>
-          <div class="egg-wrap">
 
-            <div
-              class="egg cracked shake"
-            >
+          <div class="egg-wrap">
+            <div class="egg cracked shake">
               ✦
             </div>
-
           </div>
 
           <h2>
@@ -592,8 +595,8 @@
               Your school buddy is ready to hatch!
             </span>
           </h2>
-        </div>
 
+        </div>
       </div>
     </div>
 
@@ -645,7 +648,13 @@
               class="secondary"
               onclick="restart()"
             >
-              重新測驗 Try Again
+              <span class="zh">
+                重新測驗
+              </span>
+
+              <span class="en">
+                Try Again
+              </span>
             </button>
 
           </div>
@@ -673,6 +682,7 @@
             id="video"
             autoplay
             playsinline
+            muted
           ></video>
 
           <img
@@ -691,7 +701,13 @@
         <div class="side-card">
 
           <h3>
-            準備合照 Get Ready
+            <span class="zh">
+              準備合照
+            </span>
+
+            <span class="en">
+              Get Ready
+            </span>
           </h3>
 
           <p>
@@ -706,17 +722,26 @@
               class="primary"
               onclick="takePhoto()"
             >
-              倒數拍照 Take Photo
+              <span class="zh">
+                倒數拍照
+              </span>
+
+              <span class="en">
+                Take Photo
+              </span>
             </button>
 
             <button
               class="secondary"
-              onclick="
-                stopCamera();
-                showScreen('resultScreen');
-              "
+              onclick="returnToResult()"
             >
-              返回 Back
+              <span class="zh">
+                返回
+              </span>
+
+              <span class="en">
+                Back
+              </span>
             </button>
 
           </div>
@@ -748,13 +773,18 @@
         <div class="side-card">
 
           <h3>
-            角色卡完成了！<br>
-            Your Card is Ready!
+            <span class="zh">
+              角色卡完成了！
+            </span>
+
+            <span class="en">
+              Your Card is Ready!
+            </span>
           </h3>
 
           <p>
             掃描 QR Code 下載相片。<br>
-            Scan to download.
+            Scan the QR Code to download.
           </p>
 
           <div
@@ -798,13 +828,14 @@
 
 
 <script>
-  const API_URL =
+const API_URL =
   'https://script.google.com/macros/s/AKfycbx_Y3dkGLcVgdosuMUNuHbxAyPxOdFN8HMnePDUpz8G_Si21M506O2naS3vRhdDBzLoXg/exec';
-  
+
+
 const ASSETS = {
   audio: {
     welcome:
-      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/welcome.mp3?v=3',
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/welcome.mp3?v=5',
 
     egg1:
       'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/egg1.mp3',
@@ -875,7 +906,7 @@ const ASSETS = {
       'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/creativity.png',
 
     kindness:
-      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/kindness.png?v=3'
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/kindness.png?v=5'
   },
 
   background: {
@@ -902,14 +933,19 @@ const TYPES = {
     zh: '勇氣小龍',
     en: 'Courage Dragon',
     emoji: '🐉',
+
     descZh:
-      '你勇於嘗試，不怕困難。',
+      '你勇於嘗試，不怕困難，擁有帶領大家向前的力量。',
+
     descEn:
-      'You are brave and ready to try.',
+      'You are brave and always ready to try. Your courage helps everyone move forward!',
+
     powerZh:
-      '勇敢踏出第一步！',
+      '迎接挑戰，勇敢踏出第一步！',
+
     powerEn:
-      'Take the first brave step!',
+      'Face every challenge and take the first brave step!',
+
     colors: [
       '#ffe0b5',
       '#ff8a4c'
@@ -920,14 +956,19 @@ const TYPES = {
     zh: '智慧貓頭鷹',
     en: 'Wise Owl',
     emoji: '🦉',
+
     descZh:
-      '你善於觀察和思考。',
+      '你善於觀察和思考，總能發現別人沒有留意的小線索。',
+
     descEn:
-      'You are thoughtful and observant.',
+      'You are thoughtful and observant. You can spot clues that other people may miss!',
+
     powerZh:
-      '用智慧解開難題！',
+      '細心觀察，用智慧解開難題！',
+
     powerEn:
-      'Use your wisdom to solve problems!',
+      'Look carefully and use your wisdom to solve problems!',
+
     colors: [
       '#e9ddff',
       '#8b7cf6'
@@ -938,14 +979,19 @@ const TYPES = {
     zh: '探索機械精靈',
     en: 'Explorer Robot',
     emoji: '🤖',
+
     descZh:
-      '你充滿好奇心，喜歡探索。',
+      '你充滿好奇心，喜歡動手實驗，擁有小小發明家的潛能。',
+
     descEn:
-      'You are curious and love exploring.',
+      'You are curious and love discovering how things work. You could become a brilliant young inventor!',
+
     powerZh:
-      '親手探索新世界！',
+      '大膽發問，親手探索新世界！',
+
     powerEn:
-      'Explore a new world!',
+      'Ask big questions and explore the world with your own hands!',
+
     colors: [
       '#d8f5ff',
       '#4bb7e8'
@@ -956,14 +1002,19 @@ const TYPES = {
     zh: '創意彩虹精靈',
     en: 'Rainbow Fairy',
     emoji: '🧚',
+
     descZh:
-      '你擁有豐富想像力。',
+      '你擁有豐富想像力，能用創作把平凡的事物變得精彩。',
+
     descEn:
-      'You have a colourful imagination.',
+      'Your imagination is full of colour. You can turn ordinary ideas into something wonderful!',
+
     powerZh:
-      '創造自己的色彩！',
+      '發揮想像，創造屬於自己的色彩！',
+
     powerEn:
-      'Create your own colours!',
+      'Use your imagination and create your own colours!',
+
     colors: [
       '#ffe1f4',
       '#f06fbd'
@@ -974,14 +1025,19 @@ const TYPES = {
     zh: '友愛小羊',
     en: 'Kind Little Lamb',
     emoji: '🐑',
+
     descZh:
-      '你擁有一顆溫暖的心。',
+      '你擁有一顆溫暖的心，能令身邊的人感到安心和快樂。',
+
     descEn:
-      'You have a warm and caring heart.',
+      'You have a warm and caring heart. You help everyone around you feel safe and happy!',
+
     powerZh:
-      '把友愛帶給大家！',
+      '關心別人，讓愛在校園中傳開！',
+
     powerEn:
-      'Spread kindness everywhere!',
+      'Care for others and spread kindness around your school!',
+
     colors: [
       '#fff3cc',
       '#77c77a'
@@ -1005,21 +1061,21 @@ const QUESTIONS = [
       [
         '🙋',
         '勇敢舉手發問',
-        'Raise my hand',
+        'Raise my hand and ask',
         'courage'
       ],
 
       [
         '🤔',
         '安靜思考答案',
-        'Think carefully',
+        'Stop and think carefully',
         'wisdom'
       ],
 
       [
         '🧪',
         '動手試一試',
-        'Try it myself',
+        'Try it for myself',
         'exploration'
       ],
 
@@ -1033,7 +1089,7 @@ const QUESTIONS = [
       [
         '🤝',
         '和同學一起解決',
-        'Work with friends',
+        'Solve it with my friends',
         'kindness'
       ]
     ]
@@ -1053,28 +1109,28 @@ const QUESTIONS = [
       [
         '🏅',
         '冒險訓練場',
-        'Adventure Ground',
+        'Adventure Training Ground',
         'courage'
       ],
 
       [
         '📚',
         '智慧圖書館',
-        'Wisdom Library',
+        'Library of Wisdom',
         'wisdom'
       ],
 
       [
         '⚙️',
         '未來機械室',
-        'Robotics Lab',
+        'Future Robotics Lab',
         'exploration'
       ],
 
       [
         '🎨',
         '彩虹藝術室',
-        'Rainbow Studio',
+        'Rainbow Art Studio',
         'creativity'
       ],
 
@@ -1101,14 +1157,14 @@ const QUESTIONS = [
       [
         '🛡️',
         '站出來保護他',
-        'Stand up for them',
+        'Stand up for my friend',
         'courage'
       ],
 
       [
         '🧠',
         '幫他想辦法',
-        'Think of a solution',
+        'Help think of a solution',
         'wisdom'
       ],
 
@@ -1122,14 +1178,14 @@ const QUESTIONS = [
       [
         '🎭',
         '逗他開心',
-        'Make them smile',
+        'Make my friend smile',
         'creativity'
       ],
 
       [
         '💗',
         '陪伴和安慰他',
-        'Stay and care',
+        'Stay close and care for my friend',
         'kindness'
       ]
     ]
@@ -1149,35 +1205,35 @@ const QUESTIONS = [
       [
         '🤸',
         '運動和表演',
-        'Sports',
+        'Sports and performing',
         'courage'
       ],
 
       [
         '🧩',
         '閱讀和解謎',
-        'Reading',
+        'Reading and puzzles',
         'wisdom'
       ],
 
       [
         '🔬',
         '科學和機械人',
-        'Science',
+        'Science and robotics',
         'exploration'
       ],
 
       [
         '🎵',
-        '藝術和音樂',
-        'Art and music',
+        '畫畫、音樂和創作',
+        'Art, music and creating',
         'creativity'
       ],
 
       [
         '🌱',
         '合作和服務',
-        'Helping others',
+        'Teamwork and helping others',
         'kindness'
       ]
     ]
@@ -1197,35 +1253,35 @@ const QUESTIONS = [
       [
         '🔥',
         '火焰徽章',
-        'Flame badge',
+        'A flame badge',
         'courage'
       ],
 
       [
         '📖',
         '智慧書本',
-        'Wisdom book',
+        'A book of wisdom',
         'wisdom'
       ],
 
       [
         '⚙️',
         '機械齒輪',
-        'Robot gear',
+        'A robot gear',
         'exploration'
       ],
 
       [
         '🌈',
         '彩虹畫筆',
-        'Rainbow brush',
+        'A rainbow paintbrush',
         'creativity'
       ],
 
       [
         '💝',
         '愛心花朵',
-        'Kindness flower',
+        'A flower of kindness',
         'kindness'
       ]
     ]
@@ -1332,7 +1388,8 @@ function playAudio(
     audio.onerror = function() {
       console.warn(
         'Audio error:',
-        key
+        key,
+        url
       );
 
       done(false);
@@ -1342,7 +1399,7 @@ function playAudio(
       .play()
       .then(function() {
         if (!waitUntilFinished) {
-          resolve(true);
+          done(true);
         }
       })
       .catch(function(error) {
@@ -1403,7 +1460,7 @@ function touchEgg() {
       .getElementById('eggSpeech')
       .innerHTML = bilingual(
         '你好呀！我正在等待一位新朋友。點一點我吧！',
-        'Hello! I’m waiting for a new friend. Tap me and say hello!'
+        "Hello! I'm waiting for a new friend. Tap me and say hello!"
       );
 
     playAudio('welcome');
@@ -1414,7 +1471,7 @@ function touchEgg() {
   const lines = [
     [
       '回答幾個問題，幫助我孵化吧！',
-      'Answer few questions and help me hatch!',
+      'Answer a few questions and help me hatch!',
       'egg3'
     ],
 
@@ -1422,7 +1479,6 @@ function touchEgg() {
       '你猜我會變成誰？',
       'Can you guess who I will become?',
       'egg4'
-      
     ],
 
     [
@@ -1433,7 +1489,7 @@ function touchEgg() {
 
     [
       '我好像快要醒來了！',
-      'I think I’m waking up!',
+      "I think I'm waking up!",
       'egg2'
     ]
   ];
@@ -1656,31 +1712,51 @@ async function openCamera() {
       ASSETS.character[resultType];
 
   try {
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      throw new Error(
+        'This browser does not support camera access.'
+      );
+    }
+
     stream =
       await navigator.mediaDevices
         .getUserMedia({
           video: {
             facingMode: 'user',
+
             width: {
               ideal: 1280
             },
+
             height: {
               ideal: 960
             }
           },
+
           audio: false
         });
 
-    document
-      .getElementById('video')
-      .srcObject = stream;
+    const video =
+      document.getElementById('video');
+
+    video.srcObject = stream;
+
+    await video.play();
 
     playAudio('photoReady');
 
   } catch (error) {
+    console.error(
+      'Camera error:',
+      error
+    );
+
     alert(
-      '未能開啟鏡頭。\n' +
-      'Camera could not be opened.'
+      '未能開啟鏡頭，請使用 Safari 或 Chrome，並允許相機權限。\n\n' +
+      'Camera could not be opened. Please allow camera access.'
     );
 
     showScreen('resultScreen');
@@ -1703,10 +1779,23 @@ function stopCamera() {
 }
 
 
+function returnToResult() {
+  stopCamera();
+  showScreen('resultScreen');
+}
+
+
 async function takePhoto() {
   if (isSaving) {
     return;
   }
+
+  const button =
+    document.getElementById(
+      'photoButton'
+    );
+
+  button.disabled = true;
 
   const countdown =
     document.getElementById(
@@ -1715,38 +1804,53 @@ async function takePhoto() {
 
   countdown.style.display = 'grid';
 
-  const visualCountdown =
-    async function() {
-      for (
-        const number of [3, 2, 1]
-      ) {
+  try {
+    const visualCountdown =
+      async function() {
+        for (
+          const number of [3, 2, 1]
+        ) {
+          countdown.textContent =
+            number;
+
+          await sleep(900);
+        }
+
         countdown.textContent =
-          number;
+          'Smile!';
 
-        await sleep(900);
-      }
+        await sleep(650);
+      };
 
-      countdown.textContent =
-        'Smile!';
+    await Promise.all([
+      visualCountdown(),
 
-      await sleep(650);
-    };
+      playAudio(
+        'countdown',
+        true
+      )
+    ]);
 
-  await Promise.all([
-    visualCountdown(),
-    playAudio(
-      'countdown',
-      true
-    )
-  ]);
+    await composeCard();
 
-  await composeCard();
+    countdown.style.display =
+      'none';
 
-  countdown.style.display = 'none';
+    stopCamera();
 
-  stopCamera();
+    await autoSavePhoto();
 
-  await autoSavePhoto();
+  } catch (error) {
+    console.error(error);
+
+    countdown.style.display =
+      'none';
+
+    showSaveError(error);
+
+  } finally {
+    button.disabled = false;
+  }
 }
 
 
@@ -1806,7 +1910,8 @@ function loadImage(source) {
     resolve,
     reject
   ) {
-    const image = new Image();
+    const image =
+      new Image();
 
     image.crossOrigin =
       'anonymous';
@@ -1815,7 +1920,14 @@ function loadImage(source) {
       resolve(image);
     };
 
-    image.onerror = reject;
+    image.onerror = function() {
+      reject(
+        new Error(
+          'Image failed to load: ' +
+          source
+        )
+      );
+    };
 
     image.src = source;
   });
@@ -1847,6 +1959,7 @@ function drawCover(
 
     sourceX =
       (image.width - sourceWidth) / 2;
+
   } else {
     sourceHeight =
       image.width / boxRatio;
@@ -1866,6 +1979,90 @@ function drawCover(
     width,
     height
   );
+}
+
+
+function drawFallbackBackground(
+  context,
+  result
+) {
+  const gradient =
+    context.createLinearGradient(
+      0,
+      0,
+      1200,
+      1800
+    );
+
+  gradient.addColorStop(
+    0,
+    result.colors[0]
+  );
+
+  gradient.addColorStop(
+    1,
+    '#ffffff'
+  );
+
+  context.fillStyle = gradient;
+
+  context.fillRect(
+    0,
+    0,
+    1200,
+    1800
+  );
+}
+
+
+function wrapText(
+  context,
+  text,
+  x,
+  y,
+  maxWidth,
+  lineHeight
+) {
+  const words =
+    String(text).split(' ');
+
+  let line = '';
+  const lines = [];
+
+  words.forEach(function(word) {
+    const test =
+      line
+        ? line + ' ' + word
+        : word;
+
+    if (
+      context
+        .measureText(test)
+        .width > maxWidth &&
+      line
+    ) {
+      lines.push(line);
+      line = word;
+
+    } else {
+      line = test;
+    }
+  });
+
+  if (line) {
+    lines.push(line);
+  }
+
+  lines.forEach(function(
+    lineText,
+    index
+  ) {
+    context.fillText(
+      lineText,
+      x,
+      y + index * lineHeight
+    );
+  });
 }
 
 
@@ -1909,14 +2106,9 @@ async function composeCard() {
     );
 
   } catch (error) {
-    context.fillStyle =
-      result.colors[0];
-
-    context.fillRect(
-      0,
-      0,
-      1200,
-      1800
+    drawFallbackBackground(
+      context,
+      result
     );
   }
 
@@ -1981,10 +2173,49 @@ async function composeCard() {
     photoY
   );
 
-  context.scale(-1, 1);
+  context.scale(
+    -1,
+    1
+  );
+
+  const videoWidth =
+    video.videoWidth || 1280;
+
+  const videoHeight =
+    video.videoHeight || 960;
+
+  const videoRatio =
+    videoWidth / videoHeight;
+
+  const photoRatio =
+    photoWidth / photoHeight;
+
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = videoWidth;
+  let sourceHeight = videoHeight;
+
+  if (videoRatio > photoRatio) {
+    sourceWidth =
+      videoHeight * photoRatio;
+
+    sourceX =
+      (videoWidth - sourceWidth) / 2;
+
+  } else {
+    sourceHeight =
+      videoWidth / photoRatio;
+
+    sourceY =
+      (videoHeight - sourceHeight) / 2;
+  }
 
   context.drawImage(
     video,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
     0,
     0,
     photoWidth,
@@ -2005,10 +2236,10 @@ async function composeCard() {
     const scale =
       Math.min(
         maxWidth /
-        character.width,
+          character.width,
 
         maxHeight /
-        character.height
+          character.height
       );
 
     const width =
@@ -2075,22 +2306,43 @@ async function composeCard() {
     '#19334b';
 
   context.font =
-    '900 40px Arial';
+    '900 37px Arial';
 
   context.fillText(
     result.powerZh,
     600,
-    1340
+    1320
   );
 
   context.font =
-    '700 31px Arial';
+    '700 29px Arial';
 
-  context.fillText(
+  wrapText(
+    context,
     result.powerEn,
     600,
-    1410
+    1390,
+    850,
+    42
   );
+
+  context.fillStyle =
+    '#50677b';
+
+  context.font =
+    '600 27px Arial';
+
+  wrapText(
+    context,
+    result.descEn,
+    600,
+    1510,
+    860,
+    40
+  );
+
+  context.fillStyle =
+    '#19334b';
 
   context.font =
     '700 27px Arial';
@@ -2098,7 +2350,7 @@ async function composeCard() {
   context.fillText(
     '2026 靈愛小學開放日 Open Day',
     600,
-    1670
+    1680
   );
 }
 
@@ -2106,70 +2358,92 @@ async function composeCard() {
 async function autoSavePhoto() {
   isSaving = true;
 
-  const dataUrl =
-    document
-      .getElementById(
-        'finalCanvas'
-      )
-      .toDataURL('image/png');
-
-  const result =
-    await callServerSave(
-      dataUrl,
-      resultType
+  const status =
+    document.getElementById(
+      'saveStatus'
     );
 
-  currentDownloadUrl =
-    result.downloadUrl;
+  status.className =
+    'status';
 
-  renderQRCode(
-    result.downloadUrl
+  status.innerHTML =
+    bilingual(
+      '正在製作角色卡及 QR Code……',
+      'Creating your card and QR Code…'
+    );
+
+  status.classList.remove(
+    'hidden'
   );
 
-  document
-    .getElementById(
-      'expiryInfo'
-    )
-    .textContent =
-      '下載有效至：' +
-      new Date(
-        result.expiresAt
-      ).toLocaleString();
+  try {
+    const dataUrl =
+      document
+        .getElementById(
+          'finalCanvas'
+        )
+        .toDataURL(
+          'image/png'
+        );
 
-  showScreen('previewScreen');
+    const result =
+      await callServerSave(
+        dataUrl,
+        resultType
+      );
 
-  playAudio('photoDone');
+    currentDownloadUrl =
+      result.downloadUrl;
 
-  isSaving = false;
-}
-
-
-async function callServerSave(dataUrl, type) {
-  const formData = new URLSearchParams();
-
-  formData.append('action', 'savePhoto');
-  formData.append('dataUrl', dataUrl);
-  formData.append('resultType', type);
-
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type':
-        'application/x-www-form-urlencoded;charset=UTF-8'
-    },
-    body: formData.toString()
-  });
-
-  const result = await response.json();
-
-  if (!result.ok) {
-    throw new Error(
-      result.message || 'Photo could not be saved.'
+    renderQRCode(
+      result.downloadUrl
     );
-  }
 
-  return result;
+    document
+      .getElementById(
+        'expiryInfo'
+      )
+      .textContent =
+        '下載有效至：' +
+        new Date(
+          result.expiresAt
+        ).toLocaleString();
+
+    showScreen(
+      'previewScreen'
+    );
+
+    playAudio(
+      'photoDone'
+    );
+
+  } finally {
+    isSaving = false;
+  }
 }
+
+
+async function callServerSave(
+  dataUrl,
+  type
+) {
+  const formData =
+    new URLSearchParams();
+
+  formData.append(
+    'action',
+    'savePhoto'
+  );
+
+  formData.append(
+    'dataUrl',
+    dataUrl
+  );
+
+  formData.append(
+    'resultType',
+    type
+  );
 
   const response =
     await fetch(
@@ -2182,7 +2456,8 @@ async function callServerSave(dataUrl, type) {
             'application/x-www-form-urlencoded;charset=UTF-8'
         },
 
-        body: formData.toString()
+        body:
+          formData.toString()
       }
     );
 
@@ -2215,6 +2490,16 @@ function renderQRCode(url) {
 
   box.innerHTML = '';
 
+  if (
+    typeof QRCode ===
+    'undefined'
+  ) {
+    box.textContent =
+      'QR Code library failed to load.';
+
+    return;
+  }
+
   new QRCode(
     box,
     {
@@ -2229,12 +2514,41 @@ function renderQRCode(url) {
 
 
 function openDownloadPage() {
-  if (currentDownloadUrl) {
-    window.open(
-      currentDownloadUrl,
-      '_blank'
-    );
+  if (!currentDownloadUrl) {
+    return;
   }
+
+  window.open(
+    currentDownloadUrl,
+    '_blank'
+  );
+}
+
+
+function showSaveError(error) {
+  const status =
+    document.getElementById(
+      'saveStatus'
+    );
+
+  status.className =
+    'status error';
+
+  status.innerHTML =
+    bilingual(
+      '相片未能儲存，請重新拍照。',
+      'The photo could not be saved. Please try again.'
+    ) +
+    '<br><small>' +
+    (
+      error.message ||
+      String(error)
+    ) +
+    '</small>';
+
+  status.classList.remove(
+    'hidden'
+  );
 }
 
 
@@ -2243,23 +2557,38 @@ function restart() {
   stopAudio();
 
   currentQuestion = 0;
+
+  scores = {
+    courage: 0,
+    wisdom: 0,
+    exploration: 0,
+    creativity: 0,
+    kindness: 0
+  };
+
   resultType = null;
   isSaving = false;
   currentDownloadUrl = '';
   welcomePlayed = false;
 
   document
-    .getElementById('qrCode')
+    .getElementById(
+      'qrCode'
+    )
     .innerHTML = '';
 
   document
-    .getElementById('eggSpeech')
+    .getElementById(
+      'eggSpeech'
+    )
     .innerHTML = bilingual(
-      '你好呀！我正在等待一位新朋友。',
-      'Hello! I’m waiting for a new friend.'
+      '你好呀！我正在等待一位新朋友。點一點我吧！',
+      "Hello! I'm waiting for a new friend. Tap me and say hello!"
     );
 
-  showScreen('startScreen');
+  showScreen(
+    'startScreen'
+  );
 
   setTimeout(function() {
     tryAutoPlayWelcome();
@@ -2270,6 +2599,10 @@ function restart() {
 window.addEventListener(
   'load',
   function() {
+    console.log(
+      'Magic Egg loaded.'
+    );
+
     setTimeout(function() {
       tryAutoPlayWelcome();
     }, 500);
