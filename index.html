@@ -1,2 +1,2281 @@
-const API_URL =
-'https://script.google.com/macros/s/AKfycbx_Y3dkGLcVgdosuMUNuHbxAyPxOdFN8HMnePDUpz8G_Si21M506O2naS3vRhdDBzLoXg/exec';
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <base target="_top">
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>靈愛奇蛋 Magic Egg</title>
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+  </script>
+
+  <style>
+    :root {
+      --ink: #19334b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family:
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+      background:
+        linear-gradient(
+          135deg,
+          #e9f7ff,
+          #fff6df
+        );
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+    }
+
+    .school {
+      padding: 10px 16px;
+      font-weight: 800;
+      text-align: center;
+      background: white;
+      border-radius: 999px;
+    }
+
+    .panel {
+      min-height: 650px;
+      padding: 26px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        rgba(255, 255, 255, 0.94);
+      border-radius: 30px;
+      box-shadow:
+        0 18px 50px
+        rgba(52, 81, 107, 0.15);
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .zh {
+      display: block;
+      font-weight: 900;
+    }
+
+    .en {
+      display: block;
+      margin-top: 6px;
+      color: #4f6980;
+      font-size: 0.78em;
+      font-weight: 700;
+    }
+
+    .speech {
+      max-width: 760px;
+      margin: 0 auto 20px;
+      padding: 18px 22px;
+      font-size:
+        clamp(20px, 2.7vw, 30px);
+      background: white;
+      border: 3px solid #d9ecff;
+      border-radius: 24px;
+    }
+
+    .egg-wrap {
+      height: 310px;
+      display: grid;
+      place-items: center;
+    }
+
+    .egg {
+      width: 195px;
+      height: 250px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 48px;
+      border: 8px solid #fff4c4;
+      border-radius:
+        50% 50% 46% 46% /
+        60% 60% 40% 40%;
+      background:
+        radial-gradient(
+          circle at 38% 30%,
+          #fff 0 9%,
+          transparent 10%
+        ),
+        radial-gradient(
+          circle,
+          #fff8cf 0 35%,
+          #ffe084 66%,
+          #e9ad38 100%
+        );
+      box-shadow:
+        inset -18px -22px 30px
+        rgba(167, 105, 38, 0.2),
+        0 20px 36px
+        rgba(92, 65, 22, 0.2);
+      animation:
+        floating 2.4s
+        ease-in-out infinite;
+    }
+
+    .egg.shake {
+      animation:
+        shaking 0.4s linear 3;
+    }
+
+    .egg.cracked {
+      background:
+        linear-gradient(
+          110deg,
+          #fff5ba 48%,
+          #9a6727 49%,
+          #fff0a4 51%
+        );
+    }
+
+    @keyframes floating {
+      50% {
+        transform: translateY(-12px);
+      }
+    }
+
+    @keyframes shaking {
+      25% {
+        transform: rotate(-7deg);
+      }
+
+      75% {
+        transform: rotate(7deg);
+      }
+    }
+
+    .primary,
+    .secondary,
+    .choice {
+      padding: 14px 22px;
+      cursor: pointer;
+      font-weight: 900;
+      border: 0;
+      border-radius: 18px;
+    }
+
+    .primary {
+      color: #583100;
+      background:
+        linear-gradient(
+          135deg,
+          #ffd468,
+          #ff9f43
+        );
+      box-shadow:
+        0 7px 0 #d77d20;
+    }
+
+    .secondary {
+      color: #234d72;
+      background: #e8f3ff;
+    }
+
+    .primary:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .progress {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 22px;
+    }
+
+    .dot {
+      width: 18px;
+      height: 18px;
+      background: #dbe7f2;
+      border-radius: 50%;
+    }
+
+    .dot.done {
+      background: #f5bd43;
+    }
+
+    .question {
+      margin: 0 0 28px;
+      text-align: center;
+      font-size:
+        clamp(24px, 4vw, 38px);
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns:
+        repeat(5, minmax(130px, 1fr));
+      gap: 14px;
+    }
+
+    .choice {
+      min-height: 165px;
+      display: flex;
+      gap: 9px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border: 3px solid #e2eaf1;
+    }
+
+    .choice:hover {
+      transform: translateY(-5px);
+      border-color: #79baf2;
+    }
+
+    .choice .icon {
+      font-size: 46px;
+    }
+
+    .choice .en {
+      font-size: 13px;
+    }
+
+    .hatch {
+      height: 470px;
+      display: grid;
+      place-items: center;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns:
+        0.9fr 1.1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .character-stage {
+      min-height: 410px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(
+          160deg,
+          #eaf7ff,
+          #fff1cb
+        );
+      border-radius: 28px;
+    }
+
+    .character-stage img {
+      max-width: 88%;
+      max-height: 380px;
+      object-fit: contain;
+    }
+
+    .fallback-character {
+      font-size: 150px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .result-copy h2 {
+      margin: 0 0 12px;
+      font-size:
+        clamp(34px, 5vw, 50px);
+    }
+
+    .result-copy p {
+      font-size: 21px;
+      line-height: 1.6;
+    }
+
+    .camera-grid {
+      display: grid;
+      grid-template-columns:
+        1.25fr 0.75fr;
+      gap: 22px;
+    }
+
+    .camera-box {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      background: #10202f;
+      border-radius: 24px;
+    }
+
+    .camera-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.3;
+    }
+
+    .camera-box video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .camera-character {
+      position: absolute;
+      right: 2%;
+      bottom: 2%;
+      width: 31%;
+      max-height: 52%;
+      object-fit: contain;
+      filter:
+        drop-shadow(
+          0 8px 8px
+          rgba(0, 0, 0, 0.4)
+        );
+    }
+
+    .countdown {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      color: white;
+      font-size: 120px;
+      font-weight: 900;
+      text-shadow:
+        0 5px 16px black;
+    }
+
+    .side-card {
+      padding: 22px;
+      background: #f6faff;
+      border-radius: 24px;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 12px;
+      font-weight: 800;
+      background: #fff6ce;
+      border-radius: 14px;
+    }
+
+    .status.error {
+      color: #8a2525;
+      background: #ffe2e2;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns:
+        1fr 0.65fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .qr-box {
+      max-width: 270px;
+      margin: 14px auto;
+      padding: 14px;
+      display: grid;
+      place-items: center;
+      background: white;
+      border-radius: 18px;
+    }
+
+    .qr-box canvas,
+    .qr-box img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    #finalCanvas {
+      width: 100%;
+      border-radius: 18px;
+      box-shadow:
+        0 12px 30px
+        rgba(33, 57, 80, 0.18);
+    }
+
+    @media (max-width: 860px) {
+      .choices {
+        grid-template-columns:
+          1fr 1fr;
+      }
+
+      .result-grid,
+      .camera-grid,
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #printArea,
+      #printArea * {
+        visibility: visible;
+      }
+
+      #printArea {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="app">
+
+  <div class="topbar">
+    <h1>
+      🥚 靈愛奇蛋
+      <small>Magic Egg</small>
+    </h1>
+
+    <div class="school">
+      聖公會靈愛小學<br>
+      S.K.H. Ling Oi Primary School
+    </div>
+  </div>
+
+  <section class="panel">
+
+    <div
+      id="startScreen"
+      class="screen active center"
+    >
+      <div
+        id="eggSpeech"
+        class="speech"
+      >
+        <span class="zh">
+          你好呀！我正在等待一位新朋友。點一點我吧！
+        </span>
+
+        <span class="en">
+          Hello! I’m waiting for a new friend. Tap me and say hello!
+        </span>
+      </div>
+
+      <div class="egg-wrap">
+        <div
+          id="mainEgg"
+          class="egg"
+          onclick="touchEgg()"
+        >
+          •ᴗ•
+        </div>
+      </div>
+
+      <button
+        class="primary"
+        onclick="startQuiz()"
+      >
+        <span class="zh">
+          開始孵化
+        </span>
+
+        <span class="en">
+          Start Hatching
+        </span>
+      </button>
+    </div>
+
+
+    <div
+      id="quizScreen"
+      class="screen"
+    >
+      <div
+        id="progress"
+        class="progress"
+      ></div>
+
+      <h2
+        id="questionText"
+        class="question"
+      ></h2>
+
+      <div
+        id="choices"
+        class="choices"
+      ></div>
+    </div>
+
+
+    <div
+      id="hatchScreen"
+      class="screen center"
+    >
+      <div class="hatch">
+
+        <div>
+          <div class="egg-wrap">
+
+            <div
+              class="egg cracked shake"
+            >
+              ✦
+            </div>
+
+          </div>
+
+          <h2>
+            <span class="zh">
+              你的校園夥伴正在孵化……
+            </span>
+
+            <span class="en">
+              Your school buddy is ready to hatch!
+            </span>
+          </h2>
+        </div>
+
+      </div>
+    </div>
+
+
+    <div
+      id="resultScreen"
+      class="screen"
+    >
+      <div class="result-grid">
+
+        <div class="character-stage">
+
+          <img
+            id="resultCharacter"
+            alt=""
+          >
+
+          <div
+            id="resultFallback"
+            class="fallback-character hidden"
+          ></div>
+
+        </div>
+
+        <div class="result-copy">
+
+          <h2 id="resultTitle"></h2>
+
+          <p id="resultDescription"></p>
+
+          <p id="resultPower"></p>
+
+          <div class="actions">
+
+            <button
+              class="primary"
+              onclick="openCamera()"
+            >
+              <span class="zh">
+                與夥伴合照
+              </span>
+
+              <span class="en">
+                Take a Photo
+              </span>
+            </button>
+
+            <button
+              class="secondary"
+              onclick="restart()"
+            >
+              重新測驗 Try Again
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <div
+      id="cameraScreen"
+      class="screen"
+    >
+      <div class="camera-grid">
+
+        <div class="camera-box">
+
+          <img
+            id="cameraBg"
+            class="camera-bg"
+            alt=""
+          >
+
+          <video
+            id="video"
+            autoplay
+            playsinline
+          ></video>
+
+          <img
+            id="cameraCharacter"
+            class="camera-character"
+            alt=""
+          >
+
+          <div
+            id="countdown"
+            class="countdown"
+          ></div>
+
+        </div>
+
+        <div class="side-card">
+
+          <h3>
+            準備合照 Get Ready
+          </h3>
+
+          <p>
+            請站在畫面中央。<br>
+            Stand in the middle.
+          </p>
+
+          <div class="actions">
+
+            <button
+              id="photoButton"
+              class="primary"
+              onclick="takePhoto()"
+            >
+              倒數拍照 Take Photo
+            </button>
+
+            <button
+              class="secondary"
+              onclick="
+                stopCamera();
+                showScreen('resultScreen');
+              "
+            >
+              返回 Back
+            </button>
+
+          </div>
+
+          <div
+            id="saveStatus"
+            class="status hidden"
+          ></div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <div
+      id="previewScreen"
+      class="screen"
+    >
+      <div class="preview-grid">
+
+        <div id="printArea">
+          <canvas
+            id="finalCanvas"
+            width="1200"
+            height="1800"
+          ></canvas>
+        </div>
+
+        <div class="side-card">
+
+          <h3>
+            角色卡完成了！<br>
+            Your Card is Ready!
+          </h3>
+
+          <p>
+            掃描 QR Code 下載相片。<br>
+            Scan to download.
+          </p>
+
+          <div
+            id="qrCode"
+            class="qr-box"
+          ></div>
+
+          <p id="expiryInfo"></p>
+
+          <div class="actions">
+
+            <button
+              class="primary"
+              onclick="window.print()"
+            >
+              列印 Print
+            </button>
+
+            <button
+              class="secondary"
+              onclick="openDownloadPage()"
+            >
+              下載頁 Download
+            </button>
+
+            <button
+              class="secondary"
+              onclick="restart()"
+            >
+              下一位 Next
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+
+<script>
+  const API_URL =
+  'https://script.google.com/macros/s/AKfycbx_Y3dkGLcVgdosuMUNuHbxAyPxOdFN8HMnePDUpz8G_Si21M506O2naS3vRhdDBzLoXg/exec';
+  
+const ASSETS = {
+  audio: {
+    welcome:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/welcome.mp3?v=3',
+
+    egg1:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/egg1.mp3',
+
+    egg2:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/egg2.mp3',
+
+    egg3:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/egg3.mp3',
+
+    egg4:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/egg4.mp3',
+
+    q1:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/q1.mp3',
+
+    q2:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/q2.mp3',
+
+    q3:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/q3.mp3',
+
+    q4:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/q4.mp3',
+
+    q5:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/q5.mp3',
+
+    hatching:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/hatching.mp3',
+
+    courage:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/courage.mp3',
+
+    wisdom:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/wisdom.mp3',
+
+    exploration:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/exploration.mp3',
+
+    creativity:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/creativity.mp3',
+
+    kindness:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/kindness.mp3',
+
+    photoReady:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/photo_ready.mp3',
+
+    countdown:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/countdown.mp3',
+
+    photoDone:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/audio/photo_done.mp3'
+  },
+
+  character: {
+    courage:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/courage.png',
+
+    wisdom:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/wisdom.png',
+
+    exploration:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/exploration.png',
+
+    creativity:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/creativity.png',
+
+    kindness:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/kindness.png?v=3'
+  },
+
+  background: {
+    courage:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/bgcourage.png',
+
+    wisdom:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/bgwisdom.png',
+
+    exploration:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/bgexploration.png',
+
+    creativity:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/bgcreativity.png',
+
+    kindness:
+      'https://lop-mkw.github.io/lingoi-magic-egg-assets/images/bgkindness.png'
+  }
+};
+
+
+const TYPES = {
+  courage: {
+    zh: '勇氣小龍',
+    en: 'Courage Dragon',
+    emoji: '🐉',
+    descZh:
+      '你勇於嘗試，不怕困難。',
+    descEn:
+      'You are brave and ready to try.',
+    powerZh:
+      '勇敢踏出第一步！',
+    powerEn:
+      'Take the first brave step!',
+    colors: [
+      '#ffe0b5',
+      '#ff8a4c'
+    ]
+  },
+
+  wisdom: {
+    zh: '智慧貓頭鷹',
+    en: 'Wise Owl',
+    emoji: '🦉',
+    descZh:
+      '你善於觀察和思考。',
+    descEn:
+      'You are thoughtful and observant.',
+    powerZh:
+      '用智慧解開難題！',
+    powerEn:
+      'Use your wisdom to solve problems!',
+    colors: [
+      '#e9ddff',
+      '#8b7cf6'
+    ]
+  },
+
+  exploration: {
+    zh: '探索機械精靈',
+    en: 'Explorer Robot',
+    emoji: '🤖',
+    descZh:
+      '你充滿好奇心，喜歡探索。',
+    descEn:
+      'You are curious and love exploring.',
+    powerZh:
+      '親手探索新世界！',
+    powerEn:
+      'Explore a new world!',
+    colors: [
+      '#d8f5ff',
+      '#4bb7e8'
+    ]
+  },
+
+  creativity: {
+    zh: '創意彩虹精靈',
+    en: 'Rainbow Fairy',
+    emoji: '🧚',
+    descZh:
+      '你擁有豐富想像力。',
+    descEn:
+      'You have a colourful imagination.',
+    powerZh:
+      '創造自己的色彩！',
+    powerEn:
+      'Create your own colours!',
+    colors: [
+      '#ffe1f4',
+      '#f06fbd'
+    ]
+  },
+
+  kindness: {
+    zh: '友愛小羊',
+    en: 'Kind Little Lamb',
+    emoji: '🐑',
+    descZh:
+      '你擁有一顆溫暖的心。',
+    descEn:
+      'You have a warm and caring heart.',
+    powerZh:
+      '把友愛帶給大家！',
+    powerEn:
+      'Spread kindness everywhere!',
+    colors: [
+      '#fff3cc',
+      '#77c77a'
+    ]
+  }
+};
+
+
+const QUESTIONS = [
+  {
+    zh:
+      '課堂上遇到不懂的問題，你會怎樣做？',
+
+    en:
+      'What do you do when you do not understand something in class?',
+
+    audio:
+      'q1',
+
+    options: [
+      [
+        '🙋',
+        '勇敢舉手發問',
+        'Raise my hand',
+        'courage'
+      ],
+
+      [
+        '🤔',
+        '安靜思考答案',
+        'Think carefully',
+        'wisdom'
+      ],
+
+      [
+        '🧪',
+        '動手試一試',
+        'Try it myself',
+        'exploration'
+      ],
+
+      [
+        '💡',
+        '想出不同方法',
+        'Think of a new way',
+        'creativity'
+      ],
+
+      [
+        '🤝',
+        '和同學一起解決',
+        'Work with friends',
+        'kindness'
+      ]
+    ]
+  },
+
+  {
+    zh:
+      '你最想進去哪個神秘房間？',
+
+    en:
+      'Which magical room would you most like to visit?',
+
+    audio:
+      'q2',
+
+    options: [
+      [
+        '🏅',
+        '冒險訓練場',
+        'Adventure Ground',
+        'courage'
+      ],
+
+      [
+        '📚',
+        '智慧圖書館',
+        'Wisdom Library',
+        'wisdom'
+      ],
+
+      [
+        '⚙️',
+        '未來機械室',
+        'Robotics Lab',
+        'exploration'
+      ],
+
+      [
+        '🎨',
+        '彩虹藝術室',
+        'Rainbow Studio',
+        'creativity'
+      ],
+
+      [
+        '🏡',
+        '友愛小屋',
+        'Friendship House',
+        'kindness'
+      ]
+    ]
+  },
+
+  {
+    zh:
+      '朋友遇到困難時，你會怎樣做？',
+
+    en:
+      'What would you do if your friend needed help?',
+
+    audio:
+      'q3',
+
+    options: [
+      [
+        '🛡️',
+        '站出來保護他',
+        'Stand up for them',
+        'courage'
+      ],
+
+      [
+        '🧠',
+        '幫他想辦法',
+        'Think of a solution',
+        'wisdom'
+      ],
+
+      [
+        '🔧',
+        '找工具解決',
+        'Find the right tools',
+        'exploration'
+      ],
+
+      [
+        '🎭',
+        '逗他開心',
+        'Make them smile',
+        'creativity'
+      ],
+
+      [
+        '💗',
+        '陪伴和安慰他',
+        'Stay and care',
+        'kindness'
+      ]
+    ]
+  },
+
+  {
+    zh:
+      '你最喜歡哪一種活動？',
+
+    en:
+      'Which activity do you enjoy the most?',
+
+    audio:
+      'q4',
+
+    options: [
+      [
+        '🤸',
+        '運動和表演',
+        'Sports',
+        'courage'
+      ],
+
+      [
+        '🧩',
+        '閱讀和解謎',
+        'Reading',
+        'wisdom'
+      ],
+
+      [
+        '🔬',
+        '科學和機械人',
+        'Science',
+        'exploration'
+      ],
+
+      [
+        '🎵',
+        '藝術和音樂',
+        'Art and music',
+        'creativity'
+      ],
+
+      [
+        '🌱',
+        '合作和服務',
+        'Helping others',
+        'kindness'
+      ]
+    ]
+  },
+
+  {
+    zh:
+      '選一件你最想送給奇蛋的禮物。',
+
+    en:
+      'Choose a special gift for the magic egg.',
+
+    audio:
+      'q5',
+
+    options: [
+      [
+        '🔥',
+        '火焰徽章',
+        'Flame badge',
+        'courage'
+      ],
+
+      [
+        '📖',
+        '智慧書本',
+        'Wisdom book',
+        'wisdom'
+      ],
+
+      [
+        '⚙️',
+        '機械齒輪',
+        'Robot gear',
+        'exploration'
+      ],
+
+      [
+        '🌈',
+        '彩虹畫筆',
+        'Rainbow brush',
+        'creativity'
+      ],
+
+      [
+        '💝',
+        '愛心花朵',
+        'Kindness flower',
+        'kindness'
+      ]
+    ]
+  }
+];
+
+
+let currentQuestion = 0;
+
+let scores = {
+  courage: 0,
+  wisdom: 0,
+  exploration: 0,
+  creativity: 0,
+  kindness: 0
+};
+
+let resultType = null;
+let stream = null;
+let currentAudio = null;
+let isSaving = false;
+let currentDownloadUrl = '';
+let welcomePlayed = false;
+
+
+function bilingual(zh, en) {
+  return `
+    <span class="zh">${zh}</span>
+    <span class="en">${en}</span>
+  `;
+}
+
+
+function showScreen(id) {
+  document
+    .querySelectorAll('.screen')
+    .forEach(function(screen) {
+      screen.classList.remove('active');
+    });
+
+  document
+    .getElementById(id)
+    .classList.add('active');
+}
+
+
+function sleep(ms) {
+  return new Promise(function(resolve) {
+    setTimeout(resolve, ms);
+  });
+}
+
+
+function stopAudio() {
+  if (!currentAudio) {
+    return;
+  }
+
+  currentAudio.pause();
+  currentAudio.currentTime = 0;
+  currentAudio = null;
+}
+
+
+function playAudio(
+  key,
+  waitUntilFinished = false
+) {
+  return new Promise(function(resolve) {
+    const url = ASSETS.audio[key];
+
+    stopAudio();
+
+    if (!url) {
+      resolve(false);
+      return;
+    }
+
+    const audio = new Audio(url);
+
+    currentAudio = audio;
+    audio.preload = 'auto';
+
+    let finished = false;
+
+    function done(success) {
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+
+      if (currentAudio === audio) {
+        currentAudio = null;
+      }
+
+      resolve(success);
+    }
+
+    audio.onended = function() {
+      done(true);
+    };
+
+    audio.onerror = function() {
+      console.warn(
+        'Audio error:',
+        key
+      );
+
+      done(false);
+    };
+
+    audio
+      .play()
+      .then(function() {
+        if (!waitUntilFinished) {
+          resolve(true);
+        }
+      })
+      .catch(function(error) {
+        console.warn(
+          'Audio blocked:',
+          key,
+          error
+        );
+
+        done(false);
+      });
+
+    if (waitUntilFinished) {
+      setTimeout(function() {
+        done(false);
+      }, 20000);
+    }
+  });
+}
+
+
+async function tryAutoPlayWelcome() {
+  const played =
+    await playAudio(
+      'welcome',
+      false
+    );
+
+  welcomePlayed = played;
+
+  if (!played) {
+    document
+      .getElementById('eggSpeech')
+      .innerHTML = bilingual(
+        '點一點奇蛋，聽聽它想說甚麼！',
+        'Tap the magic egg to hear its greeting!'
+      );
+  }
+}
+
+
+function touchEgg() {
+  const egg =
+    document.getElementById(
+      'mainEgg'
+    );
+
+  egg.classList.add('shake');
+
+  setTimeout(function() {
+    egg.classList.remove('shake');
+  }, 1250);
+
+  if (!welcomePlayed) {
+    welcomePlayed = true;
+
+    document
+      .getElementById('eggSpeech')
+      .innerHTML = bilingual(
+        '你好呀！我正在等待一位新朋友。點一點我吧！',
+        'Hello! I’m waiting for a new friend. Tap me and say hello!'
+      );
+
+    playAudio('welcome');
+
+    return;
+  }
+
+  const lines = [
+    [
+      '回答幾個問題，幫助我孵化吧！',
+      'Answer few questions and help me hatch!',
+      'egg3'
+    ],
+
+    [
+      '你猜我會變成誰？',
+      'Can you guess who I will become?',
+      'egg4'
+      
+    ],
+
+    [
+      '嘻嘻！有一點癢！',
+      'Hee-hee! That tickles!',
+      'egg1'
+    ],
+
+    [
+      '我好像快要醒來了！',
+      'I think I’m waking up!',
+      'egg2'
+    ]
+  ];
+
+  const selected =
+    lines[
+      Math.floor(
+        Math.random() * lines.length
+      )
+    ];
+
+  document
+    .getElementById('eggSpeech')
+    .innerHTML = bilingual(
+      selected[0],
+      selected[1]
+    );
+
+  playAudio(selected[2]);
+}
+
+
+function startQuiz() {
+  stopAudio();
+
+  scores = {
+    courage: 0,
+    wisdom: 0,
+    exploration: 0,
+    creativity: 0,
+    kindness: 0
+  };
+
+  currentQuestion = 0;
+
+  showScreen('quizScreen');
+
+  renderQuestion();
+}
+
+
+function renderQuestion() {
+  const question =
+    QUESTIONS[currentQuestion];
+
+  document
+    .getElementById('questionText')
+    .innerHTML = bilingual(
+      question.zh,
+      question.en
+    );
+
+  document
+    .getElementById('progress')
+    .innerHTML =
+      QUESTIONS
+        .map(function(_, index) {
+          return `
+            <span
+              class="dot ${
+                index < currentQuestion
+                  ? 'done'
+                  : ''
+              }"
+            ></span>
+          `;
+        })
+        .join('');
+
+  document
+    .getElementById('choices')
+    .innerHTML =
+      question.options
+        .map(function(option) {
+          return `
+            <button
+              class="choice"
+              onclick="answer('${option[3]}')"
+            >
+              <span class="icon">
+                ${option[0]}
+              </span>
+
+              <span class="zh">
+                ${option[1]}
+              </span>
+
+              <span class="en">
+                ${option[2]}
+              </span>
+            </button>
+          `;
+        })
+        .join('');
+
+  playAudio(question.audio);
+}
+
+
+function answer(type) {
+  scores[type]++;
+
+  currentQuestion++;
+
+  if (
+    currentQuestion <
+    QUESTIONS.length
+  ) {
+    renderQuestion();
+  } else {
+    hatch();
+  }
+}
+
+
+async function hatch() {
+  showScreen('hatchScreen');
+
+  const maximum =
+    Math.max(
+      ...Object.values(scores)
+    );
+
+  const winners =
+    Object.keys(scores)
+      .filter(function(key) {
+        return scores[key] === maximum;
+      });
+
+  resultType =
+    winners[
+      Math.floor(
+        Math.random() *
+        winners.length
+      )
+    ];
+
+  await playAudio(
+    'hatching',
+    true
+  );
+
+  showResult();
+}
+
+
+function showResult() {
+  const result =
+    TYPES[resultType];
+
+  const image =
+    document.getElementById(
+      'resultCharacter'
+    );
+
+  const fallback =
+    document.getElementById(
+      'resultFallback'
+    );
+
+  image.onload = function() {
+    image.classList.remove('hidden');
+    fallback.classList.add('hidden');
+  };
+
+  image.onerror = function() {
+    image.classList.add('hidden');
+    fallback.textContent =
+      result.emoji;
+    fallback.classList.remove('hidden');
+  };
+
+  image.src =
+    ASSETS.character[resultType];
+
+  document
+    .getElementById('resultTitle')
+    .innerHTML = bilingual(
+      `你孵出了${result.zh}！`,
+      `You hatched the ${result.en}!`
+    );
+
+  document
+    .getElementById(
+      'resultDescription'
+    )
+    .innerHTML = bilingual(
+      result.descZh,
+      result.descEn
+    );
+
+  document
+    .getElementById('resultPower')
+    .innerHTML = bilingual(
+      result.powerZh,
+      result.powerEn
+    );
+
+  showScreen('resultScreen');
+
+  playAudio(resultType);
+}
+
+
+async function openCamera() {
+  stopCamera();
+
+  showScreen('cameraScreen');
+
+  document
+    .getElementById('cameraBg')
+    .src =
+      ASSETS.background[resultType];
+
+  document
+    .getElementById(
+      'cameraCharacter'
+    )
+    .src =
+      ASSETS.character[resultType];
+
+  try {
+    stream =
+      await navigator.mediaDevices
+        .getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: {
+              ideal: 1280
+            },
+            height: {
+              ideal: 960
+            }
+          },
+          audio: false
+        });
+
+    document
+      .getElementById('video')
+      .srcObject = stream;
+
+    playAudio('photoReady');
+
+  } catch (error) {
+    alert(
+      '未能開啟鏡頭。\n' +
+      'Camera could not be opened.'
+    );
+
+    showScreen('resultScreen');
+  }
+}
+
+
+function stopCamera() {
+  if (!stream) {
+    return;
+  }
+
+  stream
+    .getTracks()
+    .forEach(function(track) {
+      track.stop();
+    });
+
+  stream = null;
+}
+
+
+async function takePhoto() {
+  if (isSaving) {
+    return;
+  }
+
+  const countdown =
+    document.getElementById(
+      'countdown'
+    );
+
+  countdown.style.display = 'grid';
+
+  const visualCountdown =
+    async function() {
+      for (
+        const number of [3, 2, 1]
+      ) {
+        countdown.textContent =
+          number;
+
+        await sleep(900);
+      }
+
+      countdown.textContent =
+        'Smile!';
+
+      await sleep(650);
+    };
+
+  await Promise.all([
+    visualCountdown(),
+    playAudio(
+      'countdown',
+      true
+    )
+  ]);
+
+  await composeCard();
+
+  countdown.style.display = 'none';
+
+  stopCamera();
+
+  await autoSavePhoto();
+}
+
+
+function roundedRect(
+  context,
+  x,
+  y,
+  width,
+  height,
+  radius
+) {
+  context.beginPath();
+
+  context.moveTo(
+    x + radius,
+    y
+  );
+
+  context.arcTo(
+    x + width,
+    y,
+    x + width,
+    y + height,
+    radius
+  );
+
+  context.arcTo(
+    x + width,
+    y + height,
+    x,
+    y + height,
+    radius
+  );
+
+  context.arcTo(
+    x,
+    y + height,
+    x,
+    y,
+    radius
+  );
+
+  context.arcTo(
+    x,
+    y,
+    x + width,
+    y,
+    radius
+  );
+
+  context.closePath();
+}
+
+
+function loadImage(source) {
+  return new Promise(function(
+    resolve,
+    reject
+  ) {
+    const image = new Image();
+
+    image.crossOrigin =
+      'anonymous';
+
+    image.onload = function() {
+      resolve(image);
+    };
+
+    image.onerror = reject;
+
+    image.src = source;
+  });
+}
+
+
+function drawCover(
+  context,
+  image,
+  x,
+  y,
+  width,
+  height
+) {
+  const imageRatio =
+    image.width / image.height;
+
+  const boxRatio =
+    width / height;
+
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = image.width;
+  let sourceHeight = image.height;
+
+  if (imageRatio > boxRatio) {
+    sourceWidth =
+      image.height * boxRatio;
+
+    sourceX =
+      (image.width - sourceWidth) / 2;
+  } else {
+    sourceHeight =
+      image.width / boxRatio;
+
+    sourceY =
+      (image.height - sourceHeight) / 2;
+  }
+
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    x,
+    y,
+    width,
+    height
+  );
+}
+
+
+async function composeCard() {
+  const canvas =
+    document.getElementById(
+      'finalCanvas'
+    );
+
+  const context =
+    canvas.getContext('2d');
+
+  const video =
+    document.getElementById(
+      'video'
+    );
+
+  const result =
+    TYPES[resultType];
+
+  context.clearRect(
+    0,
+    0,
+    1200,
+    1800
+  );
+
+  try {
+    const background =
+      await loadImage(
+        ASSETS.background[resultType]
+      );
+
+    drawCover(
+      context,
+      background,
+      0,
+      0,
+      1200,
+      1800
+    );
+
+  } catch (error) {
+    context.fillStyle =
+      result.colors[0];
+
+    context.fillRect(
+      0,
+      0,
+      1200,
+      1800
+    );
+  }
+
+  context.fillStyle =
+    'rgba(255,255,255,0.91)';
+
+  roundedRect(
+    context,
+    65,
+    65,
+    1070,
+    1670,
+    52
+  );
+
+  context.fill();
+
+  context.textAlign =
+    'center';
+
+  context.fillStyle =
+    '#19334b';
+
+  context.font =
+    '900 68px Arial';
+
+  context.fillText(
+    '靈愛奇蛋 Magic Egg',
+    600,
+    150
+  );
+
+  context.font =
+    '700 30px Arial';
+
+  context.fillText(
+    'S.K.H. Ling Oi Primary School',
+    600,
+    205
+  );
+
+  const photoX = 125;
+  const photoY = 270;
+  const photoWidth = 950;
+  const photoHeight = 710;
+
+  context.save();
+
+  roundedRect(
+    context,
+    photoX,
+    photoY,
+    photoWidth,
+    photoHeight,
+    36
+  );
+
+  context.clip();
+
+  context.translate(
+    photoX + photoWidth,
+    photoY
+  );
+
+  context.scale(-1, 1);
+
+  context.drawImage(
+    video,
+    0,
+    0,
+    photoWidth,
+    photoHeight
+  );
+
+  context.restore();
+
+  try {
+    const character =
+      await loadImage(
+        ASSETS.character[resultType]
+      );
+
+    const maxWidth = 320;
+    const maxHeight = 390;
+
+    const scale =
+      Math.min(
+        maxWidth /
+        character.width,
+
+        maxHeight /
+        character.height
+      );
+
+    const width =
+      character.width * scale;
+
+    const height =
+      character.height * scale;
+
+    context.drawImage(
+      character,
+      730,
+      930 - height,
+      width,
+      height
+    );
+
+  } catch (error) {
+    context.font =
+      '200px serif';
+
+    context.fillText(
+      result.emoji,
+      900,
+      910
+    );
+  }
+
+  context.fillStyle =
+    result.colors[1];
+
+  roundedRect(
+    context,
+    145,
+    1040,
+    910,
+    135,
+    40
+  );
+
+  context.fill();
+
+  context.fillStyle =
+    '#ffffff';
+
+  context.font =
+    '900 46px Arial';
+
+  context.fillText(
+    `我的校園夥伴：${result.zh}`,
+    600,
+    1110
+  );
+
+  context.font =
+    '800 32px Arial';
+
+  context.fillText(
+    `My School Buddy: ${result.en}`,
+    600,
+    1155
+  );
+
+  context.fillStyle =
+    '#19334b';
+
+  context.font =
+    '900 40px Arial';
+
+  context.fillText(
+    result.powerZh,
+    600,
+    1340
+  );
+
+  context.font =
+    '700 31px Arial';
+
+  context.fillText(
+    result.powerEn,
+    600,
+    1410
+  );
+
+  context.font =
+    '700 27px Arial';
+
+  context.fillText(
+    '2026 靈愛小學開放日 Open Day',
+    600,
+    1670
+  );
+}
+
+
+async function autoSavePhoto() {
+  isSaving = true;
+
+  const dataUrl =
+    document
+      .getElementById(
+        'finalCanvas'
+      )
+      .toDataURL('image/png');
+
+  const result =
+    await callServerSave(
+      dataUrl,
+      resultType
+    );
+
+  currentDownloadUrl =
+    result.downloadUrl;
+
+  renderQRCode(
+    result.downloadUrl
+  );
+
+  document
+    .getElementById(
+      'expiryInfo'
+    )
+    .textContent =
+      '下載有效至：' +
+      new Date(
+        result.expiresAt
+      ).toLocaleString();
+
+  showScreen('previewScreen');
+
+  playAudio('photoDone');
+
+  isSaving = false;
+}
+
+
+async function callServerSave(dataUrl, type) {
+  const formData = new URLSearchParams();
+
+  formData.append('action', 'savePhoto');
+  formData.append('dataUrl', dataUrl);
+  formData.append('resultType', type);
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type':
+        'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    body: formData.toString()
+  });
+
+  const result = await response.json();
+
+  if (!result.ok) {
+    throw new Error(
+      result.message || 'Photo could not be saved.'
+    );
+  }
+
+  return result;
+}
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+
+        body: formData.toString()
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      'Server returned ' +
+      response.status
+    );
+  }
+
+  const result =
+    await response.json();
+
+  if (!result.ok) {
+    throw new Error(
+      result.message ||
+      'Photo could not be saved.'
+    );
+  }
+
+  return result;
+}
+
+
+function renderQRCode(url) {
+  const box =
+    document.getElementById(
+      'qrCode'
+    );
+
+  box.innerHTML = '';
+
+  new QRCode(
+    box,
+    {
+      text: url,
+      width: 230,
+      height: 230,
+      correctLevel:
+        QRCode.CorrectLevel.M
+    }
+  );
+}
+
+
+function openDownloadPage() {
+  if (currentDownloadUrl) {
+    window.open(
+      currentDownloadUrl,
+      '_blank'
+    );
+  }
+}
+
+
+function restart() {
+  stopCamera();
+  stopAudio();
+
+  currentQuestion = 0;
+  resultType = null;
+  isSaving = false;
+  currentDownloadUrl = '';
+  welcomePlayed = false;
+
+  document
+    .getElementById('qrCode')
+    .innerHTML = '';
+
+  document
+    .getElementById('eggSpeech')
+    .innerHTML = bilingual(
+      '你好呀！我正在等待一位新朋友。',
+      'Hello! I’m waiting for a new friend.'
+    );
+
+  showScreen('startScreen');
+
+  setTimeout(function() {
+    tryAutoPlayWelcome();
+  }, 300);
+}
+
+
+window.addEventListener(
+  'load',
+  function() {
+    setTimeout(function() {
+      tryAutoPlayWelcome();
+    }, 500);
+  }
+);
+</script>
+
+</body>
+</html>
