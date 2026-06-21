@@ -799,7 +799,7 @@
 
 <script>
   const API_URL =
-  'https://script.google.com/macros/s/AKfycbwohZfY78yhFd1Sc6WOp_nEy83Z6hdNJ06LSg4qVftWx8qI7aodk5fYciAEMoyrI8hX8g/exec';
+  'https://script.google.com/macros/s/AKfycbwt4Oj2XRovJ9XcV3Xs1hyGkFDay4mJoaOd4wSwhbxgkTDf5BRymrj0ikJqzOnDxlkofA/exec';
   
 const ASSETS = {
   audio: {
@@ -1723,45 +1723,66 @@ async function takePhoto() {
 
   stopAudio();
 
+  const button =
+    document.getElementById(
+      'photoButton'
+    );
+
   const countdown =
     document.getElementById(
       'countdown'
     );
 
+  button.disabled = true;
   countdown.style.display = 'grid';
 
-  const visualCountdown =
-    async function() {
-      for (
-        const number of [3, 2, 1]
-      ) {
+  try {
+    const visualCountdown =
+      async function() {
+        for (
+          const number of [3, 2, 1]
+        ) {
+          countdown.textContent =
+            number;
+
+          await sleep(900);
+        }
+
         countdown.textContent =
-          number;
+          'Smile!';
 
-        await sleep(900);
-      }
+        await sleep(650);
+      };
 
-      countdown.textContent =
-        'Smile!';
+    await Promise.all([
+      visualCountdown(),
+      playAudio(
+        'countdown',
+        true
+      )
+    ]);
 
-      await sleep(650);
-    };
+    await composeCard();
 
-  await Promise.all([
-    visualCountdown(),
-    playAudio(
-      'countdown',
-      true
-    )
-  ]);
+    countdown.style.display = 'none';
 
-  await composeCard();
+    stopCamera();
 
-  countdown.style.display = 'none';
+    await autoSavePhoto();
 
-  stopCamera();
+  } catch (error) {
+    console.error(
+      'Photo process error:',
+      error
+    );
 
-  await autoSavePhoto();
+    countdown.style.display = 'none';
+
+    showSaveError(error);
+
+  } finally {
+    button.disabled = false;
+  }
 }
 
 
@@ -2121,69 +2142,282 @@ async function composeCard() {
 async function autoSavePhoto() {
   isSaving = true;
 
-  const dataUrl =
-    document
-      .getElementById(
-        'finalCanvas'
-      )
-      .toDataURL('image/png');
-
-  const result =
-    await callServerSave(
-      dataUrl,
-      resultType
+  const status =
+    document.getElementById(
+      'saveStatus'
     );
 
-  currentDownloadUrl =
-    result.downloadUrl;
+  status.className =
+    'status';
 
-  renderQRCode(
-    result.downloadUrl
+  status.innerHTML =
+    bilingual(
+      '正在儲存角色卡及建立 QR Code，請稍候……',
+      'Saving your card and creating the QR Code…'
+    );
+
+  status.classList.remove(
+    'hidden'
   );
 
-  document
-    .getElementById(
-      'expiryInfo'
-    )
-    .textContent =
-      '下載有效至：' +
-      new Date(
-        result.expiresAt
-      ).toLocaleString();
+  try {
+    /*
+     * JPEG 比 PNG 小很多，手機上傳會更快、更穩定。
+     */
+    const dataUrl =
+      document
+        .getElementById(
+          'finalCanvas'
+        )
+        .toDataURL(
+          'image/jpeg',
+          0.88
+        );
 
-  showScreen('previewScreen');
+    const result =
+      await callServerSave(
+        dataUrl,
+        resultType
+      );
 
-  playAudio('photoDone');
+    currentDownloadUrl =
+      result.downloadUrl;
 
-  isSaving = false;
+    renderQRCode(
+      result.downloadUrl
+    );
+
+    document
+      .getElementById(
+        'expiryInfo'
+      )
+      .textContent =
+        '下載有效至：' +
+        new Date(
+          result.expiresAt
+        ).toLocaleString();
+
+    showScreen(
+      'previewScreen'
+    );
+
+    playAudio(
+      'photoDone'
+    );
+
+  } finally {
+    isSaving = false;
+  }
 }
 
 
-async function callServerSave(dataUrl, type) {
-  const formData = new URLSearchParams();
+/*
+ * 不使用跨網域 fetch。
+ * GitHub Pages 以隱藏表單提交到 Apps Script，
+ * Apps Script 完成後用 postMessage 回傳結果。
+ */
+function callServerSave(
+  dataUrl,
+  type
+) {
+  return new Promise(function(
+    resolve,
+    reject
+  ) {
+    const callbackId =
+      'magicEgg_' +
+      Date.now() +
+      '_' +
+      Math.random()
+        .toString(36)
+        .slice(2);
 
-  formData.append('action', 'savePhoto');
-  formData.append('dataUrl', dataUrl);
-  formData.append('resultType', type);
+    const iframeName =
+      'uploadFrame_' +
+      callbackId;
 
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type':
-        'application/x-www-form-urlencoded;charset=UTF-8'
-    },
-    body: formData.toString()
-  });
+    const iframe =
+      document.createElement(
+        'iframe'
+      );
 
-  const result = await response.json();
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
 
-  if (!result.ok) {
-    throw new Error(
-      result.message || 'Photo could not be saved.'
+    const form =
+      document.createElement(
+        'form'
+      );
+
+    form.method = 'POST';
+    form.action = API_URL;
+    form.target = iframeName;
+    form.style.display = 'none';
+
+    function addField(
+      name,
+      value
+    ) {
+      const input =
+        document.createElement(
+          'textarea'
+        );
+
+      input.name = name;
+      input.value = value;
+
+      form.appendChild(input);
+    }
+
+    addField(
+      'action',
+      'savePhoto'
     );
-  }
 
-  return result;
+    addField(
+      'dataUrl',
+      dataUrl
+    );
+
+    addField(
+      'resultType',
+      type
+    );
+
+    addField(
+      'callbackId',
+      callbackId
+    );
+
+    let finished = false;
+
+    function cleanup() {
+      window.removeEventListener(
+        'message',
+        handleMessage
+      );
+
+      if (form.parentNode) {
+        form.parentNode.removeChild(
+          form
+        );
+      }
+
+      setTimeout(function() {
+        if (iframe.parentNode) {
+          iframe.parentNode.removeChild(
+            iframe
+          );
+        }
+      }, 1000);
+    }
+
+    function finishWithError(
+      message
+    ) {
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+      cleanup();
+
+      reject(
+        new Error(message)
+      );
+    }
+
+    function handleMessage(event) {
+      const data = event.data;
+
+      if (
+        !data ||
+        data.source !==
+          'lingoi-magic-egg-upload' ||
+        data.callbackId !==
+          callbackId
+      ) {
+        return;
+      }
+
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+      cleanup();
+
+      if (
+        data.result &&
+        data.result.ok
+      ) {
+        resolve(data.result);
+
+      } else {
+        reject(
+          new Error(
+            (
+              data.result &&
+              data.result.message
+            ) ||
+            'Photo could not be saved.'
+          )
+        );
+      }
+    }
+
+    window.addEventListener(
+      'message',
+      handleMessage
+    );
+
+    document.body.appendChild(
+      iframe
+    );
+
+    document.body.appendChild(
+      form
+    );
+
+    form.submit();
+
+    setTimeout(function() {
+      finishWithError(
+        '儲存逾時。請檢查 Apps Script 是否已重新部署，然後再試一次。'
+      );
+    }, 60000);
+  });
+}
+
+
+function showSaveError(error) {
+  const status =
+    document.getElementById(
+      'saveStatus'
+    );
+
+  status.className =
+    'status error';
+
+  status.innerHTML =
+    bilingual(
+      '相片未能儲存，請按「倒數拍照」再試一次。',
+      'The photo could not be saved. Please try again.'
+    ) +
+    '<br><small>' +
+    (
+      error.message ||
+      String(error)
+    ) +
+    '</small>';
+
+  status.classList.remove(
+    'hidden'
+  );
+
+  showScreen(
+    'cameraScreen'
+  );
 }
 
 
