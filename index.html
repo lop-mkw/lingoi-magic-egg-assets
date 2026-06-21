@@ -762,6 +762,11 @@
             class="qr-box"
           ></div>
 
+          <div
+            id="previewStatus"
+            class="status hidden"
+          ></div>
+
           <p id="expiryInfo"></p>
 
           <div class="actions">
@@ -799,7 +804,7 @@
 
 <script>
   const API_URL =
-  'https://script.google.com/macros/s/AKfycbyD9q-qvU3Ixh71pX0fHK0XwCJ4UhYkE3hsDLe3u7wuoFvHjnnzGp4c3cOBvDSM88qMVw/exec';
+  'https://script.google.com/macros/s/AKfycby34nPy62wx-l5d35H8xqHKJ97vTs6hEfw8sLkwm1XN5UZHWEPLZF24ihniNtxCyfVuUw/exec';
   
 const ASSETS = {
   audio: {
@@ -1762,11 +1767,30 @@ async function takePhoto() {
       )
     ]);
 
-    await composeCard();
+    /*
+     * 先立即把當刻的鏡頭畫面複製到獨立 Canvas。
+     * 避免 iPhone 停止鏡頭後只剩背景。
+     */
+    const capturedFrame =
+      captureStillFrame();
 
-    countdown.style.display = 'none';
+    await composeCard(
+      capturedFrame
+    );
+
+    countdown.style.display =
+      'none';
 
     stopCamera();
+
+    /*
+     * 不等待上傳完成，立即顯示剛拍好的角色卡。
+     */
+    preparePreviewForSaving();
+
+    showScreen(
+      'previewScreen'
+    );
 
     await autoSavePhoto();
 
@@ -1776,13 +1800,99 @@ async function takePhoto() {
       error
     );
 
-    countdown.style.display = 'none';
+    countdown.style.display =
+      'none';
 
     showSaveError(error);
 
   } finally {
     button.disabled = false;
   }
+}
+
+
+function captureStillFrame() {
+  const video =
+    document.getElementById(
+      'video'
+    );
+
+  if (
+    !video.videoWidth ||
+    !video.videoHeight
+  ) {
+    throw new Error(
+      '鏡頭畫面尚未準備好，請稍候一秒後再拍照。'
+    );
+  }
+
+  const canvas =
+    document.createElement(
+      'canvas'
+    );
+
+  canvas.width =
+    video.videoWidth;
+
+  canvas.height =
+    video.videoHeight;
+
+  const context =
+    canvas.getContext(
+      '2d'
+    );
+
+  /*
+   * 儲存未鏡像的原始畫面；
+   * composeCard() 繪製時再做鏡像。
+   */
+  context.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  return canvas;
+}
+
+
+function preparePreviewForSaving() {
+  const qrBox =
+    document.getElementById(
+      'qrCode'
+    );
+
+  qrBox.innerHTML =
+    '<div style="padding:28px 12px;text-align:center;font-weight:900;">' +
+    '正在建立 QR Code…<br>' +
+    '<span style="font-size:0.8em;color:#4f6980;">Creating QR Code…</span>' +
+    '</div>';
+
+  document
+    .getElementById(
+      'expiryInfo'
+    )
+    .textContent = '';
+
+  const status =
+    document.getElementById(
+      'previewStatus'
+    );
+
+  status.className =
+    'status';
+
+  status.innerHTML =
+    bilingual(
+      '相片已拍攝，正在儲存角色卡，請稍候……',
+      'Photo captured. Saving your card…'
+    );
+
+  status.classList.remove(
+    'hidden'
+  );
 }
 
 
@@ -1905,7 +2015,7 @@ function drawCover(
 }
 
 
-async function composeCard() {
+async function composeCard(capturedFrame) {
   const canvas =
     document.getElementById(
       'finalCanvas'
@@ -1913,11 +2023,6 @@ async function composeCard() {
 
   const context =
     canvas.getContext('2d');
-
-  const video =
-    document.getElementById(
-      'video'
-    );
 
   const result =
     TYPES[resultType];
@@ -2019,8 +2124,9 @@ async function composeCard() {
 
   context.scale(-1, 1);
 
-  context.drawImage(
-    video,
+  drawCover(
+    context,
+    capturedFrame,
     0,
     0,
     photoWidth,
@@ -2144,26 +2250,10 @@ async function autoSavePhoto() {
 
   const status =
     document.getElementById(
-      'saveStatus'
+      'previewStatus'
     );
-
-  status.className =
-    'status';
-
-  status.innerHTML =
-    bilingual(
-      '正在儲存角色卡及建立 QR Code，請稍候……',
-      'Saving your card and creating the QR Code…'
-    );
-
-  status.classList.remove(
-    'hidden'
-  );
 
   try {
-    /*
-     * JPEG 比 PNG 小很多，手機上傳會更快、更穩定。
-     */
     const dataUrl =
       document
         .getElementById(
@@ -2197,13 +2287,46 @@ async function autoSavePhoto() {
           result.expiresAt
         ).toLocaleString();
 
-    showScreen(
-      'previewScreen'
-    );
+    status.innerHTML =
+      bilingual(
+        '角色卡已成功儲存，可以掃描 QR Code 下載。',
+        'Your card has been saved. Scan the QR Code to download it.'
+      );
 
     playAudio(
       'photoDone'
     );
+
+  } catch (error) {
+    console.error(
+      'Save error:',
+      error
+    );
+
+    status.className =
+      'status error';
+
+    status.innerHTML =
+      bilingual(
+        '相片已拍好並顯示在左方，但未能建立 QR Code。',
+        'Your photo is shown, but the QR Code could not be created.'
+      ) +
+      '<br><small>' +
+      (
+        error.message ||
+        String(error)
+      ) +
+      '</small>';
+
+    const qrBox =
+      document.getElementById(
+        'qrCode'
+      );
+
+    qrBox.innerHTML =
+      '<div style="padding:20px;text-align:center;color:#8a2525;font-weight:900;">' +
+      'QR Code 建立失敗<br>QR Code failed' +
+      '</div>';
 
   } finally {
     isSaving = false;
@@ -2212,9 +2335,8 @@ async function autoSavePhoto() {
 
 
 /*
- * 不使用跨網域 fetch。
- * GitHub Pages 以隱藏表單提交到 Apps Script，
- * Apps Script 完成後用 postMessage 回傳結果。
+ * 先用隱藏表單上傳，再以 JSONP 輪詢確認 Apps Script
+ * 已真正建立相片 token。確認後才顯示 QR Code。
  */
 function callServerSave(
   dataUrl,
@@ -2224,17 +2346,12 @@ function callServerSave(
     resolve,
     reject
   ) {
-    const callbackId =
-      'magicEgg_' +
-      Date.now() +
-      '_' +
-      Math.random()
-        .toString(36)
-        .slice(2);
+    const token =
+      createClientToken();
 
     const iframeName =
       'uploadFrame_' +
-      callbackId;
+      token;
 
     const iframe =
       document.createElement(
@@ -2285,90 +2402,8 @@ function callServerSave(
     );
 
     addField(
-      'callbackId',
-      callbackId
-    );
-
-    let finished = false;
-
-    function cleanup() {
-      window.removeEventListener(
-        'message',
-        handleMessage
-      );
-
-      if (form.parentNode) {
-        form.parentNode.removeChild(
-          form
-        );
-      }
-
-      setTimeout(function() {
-        if (iframe.parentNode) {
-          iframe.parentNode.removeChild(
-            iframe
-          );
-        }
-      }, 1000);
-    }
-
-    function finishWithError(
-      message
-    ) {
-      if (finished) {
-        return;
-      }
-
-      finished = true;
-      cleanup();
-
-      reject(
-        new Error(message)
-      );
-    }
-
-    function handleMessage(event) {
-      const data = event.data;
-
-      if (
-        !data ||
-        data.source !==
-          'lingoi-magic-egg-upload' ||
-        data.callbackId !==
-          callbackId
-      ) {
-        return;
-      }
-
-      if (finished) {
-        return;
-      }
-
-      finished = true;
-      cleanup();
-
-      if (
-        data.result &&
-        data.result.ok
-      ) {
-        resolve(data.result);
-
-      } else {
-        reject(
-          new Error(
-            (
-              data.result &&
-              data.result.message
-            ) ||
-            'Photo could not be saved.'
-          )
-        );
-      }
-    }
-
-    window.addEventListener(
-      'message',
-      handleMessage
+      'token',
+      token
     );
 
     document.body.appendChild(
@@ -2382,11 +2417,198 @@ function callServerSave(
     form.submit();
 
     setTimeout(function() {
-      finishWithError(
-        '儲存逾時。請檢查 Apps Script 是否已重新部署，然後再試一次。'
-      );
-    }, 60000);
+      if (form.parentNode) {
+        form.parentNode.removeChild(
+          form
+        );
+      }
+    }, 1000);
+
+    waitForSavedPhoto(
+      token,
+      0
+    )
+      .then(function(result) {
+        setTimeout(function() {
+          if (iframe.parentNode) {
+            iframe.parentNode.removeChild(
+              iframe
+            );
+          }
+        }, 1000);
+
+        resolve(result);
+      })
+      .catch(function(error) {
+        if (iframe.parentNode) {
+          iframe.parentNode.removeChild(
+            iframe
+          );
+        }
+
+        reject(error);
+      });
   });
+}
+
+
+function waitForSavedPhoto(
+  token,
+  attempt
+) {
+  const maximumAttempts = 30;
+
+  return new Promise(function(
+    resolve,
+    reject
+  ) {
+    if (attempt >= maximumAttempts) {
+      reject(
+        new Error(
+          '相片已提交，但未能確認 QR Code。請檢查 Apps Script 部署版本。'
+        )
+      );
+
+      return;
+    }
+
+    const callbackName =
+      '__magicEggCheck_' +
+      Date.now() +
+      '_' +
+      Math.random()
+        .toString(36)
+        .slice(2);
+
+    const script =
+      document.createElement(
+        'script'
+      );
+
+    const timeoutId =
+      setTimeout(function() {
+        cleanup();
+
+        setTimeout(function() {
+          waitForSavedPhoto(
+            token,
+            attempt + 1
+          )
+            .then(resolve)
+            .catch(reject);
+        }, 1000);
+      }, 5000);
+
+    function cleanup() {
+      clearTimeout(timeoutId);
+
+      try {
+        delete window[
+          callbackName
+        ];
+      } catch (error) {
+        window[
+          callbackName
+        ] = undefined;
+      }
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(
+          script
+        );
+      }
+    }
+
+    window[
+      callbackName
+    ] = function(data) {
+      cleanup();
+
+      if (
+        data &&
+        data.ok &&
+        data.ready
+      ) {
+        resolve({
+          ok: true,
+
+          downloadUrl:
+            API_URL +
+            '?photo=' +
+            encodeURIComponent(token),
+
+          expiresAt:
+            data.expiresAt
+        });
+
+        return;
+      }
+
+      setTimeout(function() {
+        waitForSavedPhoto(
+          token,
+          attempt + 1
+        )
+          .then(resolve)
+          .catch(reject);
+      }, 1000);
+    };
+
+    script.onerror = function() {
+      cleanup();
+
+      setTimeout(function() {
+        waitForSavedPhoto(
+          token,
+          attempt + 1
+        )
+          .then(resolve)
+          .catch(reject);
+      }, 1000);
+    };
+
+    script.src =
+      API_URL +
+      '?action=checkPhoto' +
+      '&token=' +
+      encodeURIComponent(token) +
+      '&callback=' +
+      encodeURIComponent(
+        callbackName
+      ) +
+      '&t=' +
+      Date.now();
+
+    document.head.appendChild(
+      script
+    );
+  });
+}
+
+
+function createClientToken() {
+  const randomPart =
+    Math.random()
+      .toString(36)
+      .slice(2);
+
+  const timePart =
+    Date.now()
+      .toString(36);
+
+  return (
+    'ME_' +
+    timePart +
+    '_' +
+    randomPart +
+    '_' +
+    Math.random()
+      .toString(36)
+      .slice(2)
+  ).replace(
+    /[^A-Za-z0-9_]/g,
+    ''
+  );
 }
 
 
